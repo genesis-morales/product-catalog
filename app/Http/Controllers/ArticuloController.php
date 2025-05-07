@@ -31,9 +31,32 @@ class ArticuloController extends Controller
         return redirect()->route('articulos.show', $articulo);
     }
 
-    public function show($id) {
-        $articulo = Articulo::findOrFail($id); // Mejor usar findOrFail para evitar errores si no existe
+    public function show(Articulo $articulo) {
+        //$articulo = Articulo::findOrFail($id); // Mejor usar findOrFail para evitar errores si no existe
         return view('articulos.show', compact('articulo'));
     }
+
+    public function edit(Articulo $articulo) {
+        return view('articulos.edit', compact('articulo'));
+    }
+
+    public function update(Request $request, Articulo $articulo) {
+        $articulo->nombre = $request->nombre;
+        $articulo->nota = $request->nota;
+        $articulo->tipo = $request->tipo;
+        $articulo->precio = $request->precio;
+        $articulo->fecha_vencimiento = $request->fecha_vencimiento;
+
+        $articulo->save();
+        
+        return redirect()->route('articulos.show', $articulo);
+
+
+    }
     
+    public function destroy(Articulo $articulo) {
+        $articulo->delete();
+        
+        return redirect()->route('articulos.index');
+    }
 }
