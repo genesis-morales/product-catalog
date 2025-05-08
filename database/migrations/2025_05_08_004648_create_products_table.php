@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('articulos', function (Blueprint $table) {
+        Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre'); //varchar
-            $table->string('nota')->nullable();
-            $table->enum('tipo', ['abarrote', 'fruta', 'verdura', 'otro']);
-            $table->decimal('precio', 8,2);
-            $table->date('fecha_vencimiento')->nullable();
+            $table->string('name');
+            $table->text('description');
+            $table->decimal('price', 8, 2);
+            $table->foreignId('subcategory_id')->constrained(); // se relaciona con subcategories.id
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('articulos');
+        Schema::dropIfExists('products');
     }
 };
