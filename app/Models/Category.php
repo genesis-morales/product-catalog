@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Category extends Model
 {
     use HasFactory;
+    protected $fillable = ['name'];
 
     public function subcategories() {
-        //Una categoría tiene muchas subcategorías
         return $this->hasMany(Subcategory::class);
     }
     
