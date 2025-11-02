@@ -19,8 +19,19 @@ class CategoryFactory extends Factory
 
     public function definition(): array
     {
+        $categories = [
+            'Computadoras',
+            'Periféricos',
+            'Almacenamiento',
+            'Componentes',
+            'Redes y Conectividad',
+            'Audio y Video',
+            'Móviles y Accesorios',
+            'Gaming'
+        ];
+
         return [
-            'name' => ucfirst($this->faker->words(2, true)), // Ej: "Comida rápida"
+            'name' => $this->faker->randomElement($categories),
         ];
     }
 }

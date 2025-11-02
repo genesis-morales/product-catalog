@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description');
-            $table->decimal('price', 8, 2);
-            $table->foreignId('subcategory_id')->constrained(); // se relaciona con subcategories.id
+            $table->decimal('price', 10, 2);
+            $table->integer('stock')->default(0);  // ← Asegúrate que está
+            $table->boolean('available')->default(true); // ← Corrige a 'available', no 'avaible'
+            $table->string('img')->nullable();
+            $table->foreignId('subcategory_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

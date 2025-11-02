@@ -19,21 +19,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Creamos 10 categorías
-        Category::factory(10)->create()->each(function ($category) {
-            
-            // Por cada categoría creada, generamos entre 2 y 5 subcategorías
-            Subcategory::factory(rand(2, 5))->create([
-                // Asignamos la subcategoría a la categoría actual
-                'category_id' => $category->id
-            ])->each(function ($subcategory) {
+        // Crear 4 categorías
+        Category::factory(4)->create();
 
-                // Por cada subcategoría creada, generamos entre 3 y 10 productos
-                Product::factory(rand(3, 10))->create([
-                    // Asignamos el producto a la subcategoría actual
-                    'subcategory_id' => $subcategory->id
-                ]);
-            });
-        });
+        // Crear 8 subcategorías
+        Subcategory::factory(8)->create();
+
+        // Crear 5 productos
+        Product::factory(5)->create();
     }
 }

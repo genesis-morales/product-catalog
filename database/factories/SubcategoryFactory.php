@@ -21,9 +21,35 @@ class SubcategoryFactory extends Factory
 
     public function definition(): array
     {
+        $subcategories = [
+            'Laptops',
+            'Desktops',
+            'Tablets',
+            'Mini PCs',
+            'Teclados',
+            'Ratones',
+            'Webcams',
+            'Micrófonos',
+            'Auriculares',
+            'Monitores',
+            'Discos Duros (HDD)',
+            'Discos Sólidos (SSD)',
+            'USB/Pendrives',
+            'Tarjetas de Memoria',
+            'Procesadores (CPUs)',
+            'Tarjetas Gráficas (GPUs)',
+            'Memorias RAM',
+            'Placas Madre',
+            'Fuentes de Poder',
+            'Routers',
+            'Switches',
+            'Adaptadores WiFi',
+            'Cables Ethernet',
+        ];
+
         return [
-            'name' => ucfirst($this->faker->words(2, true)), // Ej: "Comida rápida"
-            'category_id' => Category::factory(), // por si se crea sola
+            'name' => $this->faker->randomElement($subcategories),
+            'category_id' => Category::inRandomOrder()->first()->id,
         ];
     }
 }
