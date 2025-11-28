@@ -10,7 +10,12 @@ class ProductController extends Controller
 {
     public function index()
     {
-        return Product::all();
+        $perPage = request('per_page', 10); // tamaño de página
+        $products = Product::with('subcategory.category')
+            ->orderBy('id', 'desc')        // orden por defecto
+            ->paginate($perPage);
+
+        return response()->json($products);    
     }
     public function store(Request $request)
     {
@@ -21,6 +26,8 @@ class ProductController extends Controller
             'stock' => 'required|integer',
             'available' => 'boolean',
             'subcategory_id' => 'required|integer',
+            'img' => 'nullable|string',
+
         ]);
 
         return Product::create($validated);
