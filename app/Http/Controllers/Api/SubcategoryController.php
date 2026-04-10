@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\SubcategoryResource;
 use App\Models\Subcategory;
 use App\Models\Product;
 
@@ -10,12 +12,17 @@ class SubcategoryController extends Controller
 {
     public function products($id)
     {
-        return Product::where('subcategory_id', $id)->get();
+        $products = Product::with('subcategory.category')
+            ->where('subcategory_id', $id)
+            ->get();
+
+        return ProductResource::collection($products);
     }
 
     public function index()
-{
-    $subcategories = Subcategory::all();
-    return response()->json($subcategories);
-}
+    {
+        $subcategories = Subcategory::all();
+
+        return SubcategoryResource::collection($subcategories);
+    }
 }
