@@ -2,28 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\UploadProductImageRequest;
+use App\Services\ImageUploadService;
 
 class ProductImageController extends Controller
 {
-    public function store(Request $request)
+    public function store(UploadProductImageRequest $request, ImageUploadService $imageUpload)
     {
-        $request->validate([
-            'image' => ['required', 'image', 'max:2048'], // máx ~2MB
-        ]);
+        $path = $imageUpload->uploadProductImage($request->file('image'));
+        $url = $imageUpload->url($path);
 
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('products', 'public'); // storage/app/public/products
-            $url = asset('storage/' . $path); // URL pública
-
-            return response()->json([
-                'path' => $path,
-                'url'  => $url,
-            ]);
-        }
-
-        return response()->json(['message' => 'No se recibió archivo'], 400);
+        return response()->json([
+            'path' => $path,
+            'url' => $url,
+        ], 201);
     }
 }
 

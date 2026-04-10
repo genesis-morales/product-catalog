@@ -3,53 +3,56 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Services\ImageUploadService;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $perPage = request('per_page', 10); // tamaño de página
-        $products = Product::with('subcategory.category')
-            ->orderBy('id', 'desc')        // orden por defecto
+        $perPage = $request->query('per_page', 10);
+
+        $products = Product::with(['subcategory.category'])
+            ->orderByDesc('id')
             ->paginate($perPage);
 
-        return response()->json($products);    
-    }
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'description' => 'required|string',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
-            'available' => 'boolean',
-            'subcategory_id' => 'required|integer',
-            'img' => 'nullable|string',
-
-        ]);
-
-        return Product::create($validated);
+        return ProductResource::collection($products);
     }
 
-    public function update(Request $request, Product $product)
+    public function store(StoreProductRequest $request, ImageUploadService $imageUpload)
     {
-        $validated = $request->validate([
-            'name' => 'string',
-            'description' => 'string',
-            'price' => 'numeric',
-            'stock' => 'integer',
-            'available' => 'boolean',
-        ]);
+        $validated = $request->safe()->only(['name', 'description', 'price', 'stock', 'available', 'subcategory_id']);
 
-        $product->update($validated);
-        return $product;
+        if ($request->hasFile('image')) {
+            $validated['img'] = $imageUpload->uploadProductImage($request->file('image'));
+        }
+
+        $product = Product::create($validated);
+
+        return new ProductResource($product->load(['subcategory.category']));
+    }
+
+    public function update(UpdateProductRequest $request, Product $product, ImageUploadService $imageUpload)
+    {
+        $validated = $request->safe()->only(['name', 'description', 'price', 'stock', 'available', 'subcategory_id']);
+
+        if ($request->hasFile('image')) {
+            $validated['img'] = $imageUpload->uploadProductImage($request->file('image'));
+        }
+
+        $product->update(array_filter($validated, fn ($value) => $value !== null));
+
+        return new ProductResource($product->fresh(['subcategory.category']));
     }
 
     public function destroy(Product $product)
     {
         $product->delete();
-        return response()->json(['message' => 'Producto eliminado'], 200);
+
+        return response()->json(['message' => 'Producto eliminado correctamente'], 200);
     }
 }
