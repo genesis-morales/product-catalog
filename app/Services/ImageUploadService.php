@@ -2,48 +2,48 @@
 
 namespace App\Services;
 
+use Cloudinary\Cloudinary;
+use Cloudinary\Configuration\Configuration;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManagerStatic as Image;
 
 class ImageUploadService
 {
-    protected string $disk;
+    private Cloudinary $cloudinary;
 
     public function __construct()
     {
-        $this->disk = config('filesystems.default', 'public');
+        $this->cloudinary = new Cloudinary(
+            Configuration::instance([
+                'cloud' => [
+                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                    'api_key'    => env('CLOUDINARY_API_KEY'),
+                    'api_secret' => env('CLOUDINARY_API_SECRET'),
+                ],
+                'url' => [
+                    'secure' => true,
+                ],
+            ])
+        );
     }
 
-    public function uploadProductImage(UploadedFile $image): string
+    public function uploadProductImage(UploadedFile $file): string
     {
-        $path = $image->store('products', $this->disk);
+        $result = $this->cloudinary->uploadApi()->upload($file->getRealPath(), [
+            'folder' => 'product-catalog/products',
+            'transformation' => [
+                'width'        => 800,
+                'height'       => 800,
+                'crop'         => 'fill',
+                'quality'      => 'auto',
+                'fetch_format' => 'auto',
+            ],
+        ]);
 
-        if (class_exists(Image::class)) {
-            $this->optimizeImage($path);
-        }
-
-        return $path;
+        return $result['secure_url'];
     }
 
     public function url(string $path): string
     {
-        return Storage::disk($this->disk)->url($path);
-    }
-
-    protected function optimizeImage(string $path): void
-    {
-        try {
-            $imagePath = Storage::disk($this->disk)->path($path);
-            Image::make($imagePath)
-                ->resize(1200, null, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })
-                ->encode('webp', 80)
-                ->save($imagePath);
-        } catch (\Throwable $exception) {
-            // Si no está instalado Intervention/Image o falla, no bloqueamos la subida.
-        }
+        return $path;
     }
 }

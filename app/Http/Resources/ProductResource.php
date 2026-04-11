@@ -15,7 +15,7 @@ class ProductResource extends JsonResource
             'price' => (float) $this->price,
             'stock' => $this->stock,
             'available' => (bool) $this->available,
-            'image_url' => $this->image_url,
+            'img' => $this-> img,
             'subcategory' => new SubcategoryResource($this->whenLoaded('subcategory')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
