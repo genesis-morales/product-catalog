@@ -16,12 +16,8 @@ Route::get('/categories/{id}/subcategories', [CategoryController::class, 'subcat
 Route::get('/subcategories', [SubcategoryController::class, 'index']);
 Route::get('/subcategories/{id}/products', [SubcategoryController::class, 'products']);
 
-Route::get('/health-check', function () {
-    return response()->json(['ok' => true]);
-});
-
-Route::apiResource('products', ProductController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::post('/products/upload-image', [ProductImageController::class, 'store']);
+Route::apiResource('products', ProductController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::prefix('cart')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\CartController::class, 'show']);
