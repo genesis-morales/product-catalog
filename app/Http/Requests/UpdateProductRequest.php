@@ -20,8 +20,7 @@ class UpdateProductRequest extends FormRequest
             'stock' => ['sometimes', 'integer', 'min:0'],
             'available' => ['sometimes', 'boolean'],
             'subcategory_id' => ['sometimes', 'integer', 'exists:subcategories,id'],
-            'img' => ['nullable', 'string'],
-            'image' => ['sometimes', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
+            'img' => 'nullable|string|url',
         ];
     }
 }
