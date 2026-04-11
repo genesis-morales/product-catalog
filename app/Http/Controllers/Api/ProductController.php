@@ -23,18 +23,21 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
-    public function store(StoreProductRequest $request, ImageUploadService $imageUpload)
-    {
-        $validated = $request->safe()->only(['name', 'description', 'price', 'stock', 'available', 'subcategory_id']);
+public function store(StoreProductRequest $request, ImageUploadService $imageUpload)
+{
+    $validated = $request->safe()->only([
+        'name', 'description', 'price', 'stock', 
+        'available', 'subcategory_id',
+        'img',
+    ]);
 
-        if ($request->hasFile('image')) {
-            $validated['img'] = $imageUpload->uploadProductImage($request->file('image'));
-        }
-
-        $product = Product::create($validated);
-
-        return new ProductResource($product->load(['subcategory.category']));
+    if ($request->hasFile('image')) {
+        $validated['img'] = $imageUpload->uploadProductImage($request->file('image'));
     }
+
+    $product = Product::create($validated);
+    return new ProductResource($product->load(['subcategory.category']));
+}
 
     public function update(UpdateProductRequest $request, Product $product, ImageUploadService $imageUpload)
     {
