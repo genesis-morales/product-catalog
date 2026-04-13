@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('carts', function (Blueprint $table) {
+            Schema::create('carts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->uuid('guest_token')->nullable()->unique();
-            $table->string('status')->default('open');
+            $table->string('guest_token')->nullable()->unique();
+            $table->enum('status', ['open', 'completed', 'abandoned'])->default('open');
             $table->timestamps();
         });
     }

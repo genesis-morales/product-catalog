@@ -10,6 +10,7 @@ class CartResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'guest_token' => $this->guest_token,
             'items' => CartItemResource::collection($this->whenLoaded('items')),
             'subtotal' => (float) $this->subtotal,
             'total' => (float) $this->total,

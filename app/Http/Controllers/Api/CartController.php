@@ -10,6 +10,7 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
@@ -38,7 +39,7 @@ class CartController extends Controller
     {
         $cart = $cartService->getCart(request());
 
-        abort_unless($item->cart_id === $cart->id, 403, 'El artículo no pertenece a este carrito.');
+        abort_unless($item->cart_id == $cart->id, 403, 'El artículo no pertenece a este carrito.');
 
         $cartService->updateItem($item, $request->input('quantity'));
 
@@ -47,13 +48,15 @@ class CartController extends Controller
 
     public function removeItem(CartItem $item, CartService $cartService)
     {
-        $cart = $cartService->getCart(request());
+    $cart = $cartService->getCart(request());
 
-        abort_unless($item->cart_id === $cart->id, 403, 'El artículo no pertenece a este carrito.');
+    abort_unless($item->cart_id === $cart->id, 403, 'El artículo no pertenece a este carrito.');
 
-        $item->delete();
+    $item->delete();
 
-        return response()->json(['message' => 'Item eliminado del carrito'], 200);
+    $response = response()->json(new CartResource($cart->fresh(['items.product'])));
+
+    return $cartService->attachGuestCookie($response, $cart);
     }
 
     public function prepareCheckout(Request $request, CartService $cartService)

@@ -63,6 +63,8 @@ class CartService
 
     public function resolveGuestToken(Request $request): string
     {
-        return $request->cookie('cart_token') ?? Str::uuid();
+    return $request->header('X-Cart-Token')
+        ?? $request->cookie('cart_token')
+        ?? Str::uuid();
     }
 }

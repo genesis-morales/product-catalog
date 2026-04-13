@@ -21,6 +21,8 @@ class CartItem extends Model
         'unit_price' => 'decimal:2',
     ];
 
+    protected $appends = ['total_price'];
+
     public function cart()
     {
         return $this->belongsTo(Cart::class);
