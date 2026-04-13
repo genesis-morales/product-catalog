@@ -12,6 +12,15 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+
+    public function all()
+    {
+        $products = Product::with(['subcategory.category'])
+            ->orderByDesc('id')
+            ->get();
+
+        return ProductResource::collection($products);
+    }
     public function index(Request $request)
     {
         $perPage = $request->query('per_page', 10);

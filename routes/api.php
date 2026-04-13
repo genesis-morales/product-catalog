@@ -17,6 +17,7 @@ Route::get('/subcategories', [SubcategoryController::class, 'index']);
 Route::get('/subcategories/{id}/products', [SubcategoryController::class, 'products']);
 
 Route::post('/products/upload-image', [ProductImageController::class, 'store']);
+Route::get('/products/all', [ProductController::class, 'all']);
 Route::apiResource('products', ProductController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::prefix('cart')->group(function () {

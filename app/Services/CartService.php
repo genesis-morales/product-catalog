@@ -6,8 +6,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
 class CartService
@@ -31,7 +30,7 @@ class CartService
         ]);
     }
 
-    public function attachGuestCookie(Response $response, Cart $cart): Response
+    public function attachGuestCookie(JsonResponse $response, Cart $cart): JsonResponse
     {
         if (! $cart->user_id && $cart->guest_token && ! request()->cookie('cart_token')) {
             return $response->cookie('cart_token', $cart->guest_token, 60 * 24 * 30, '/', null, false, true);
