@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\SubcategoryController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\OrderController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -39,3 +40,7 @@ Route::prefix('cart')->group(function () {
     Route::delete('/items/{item}', [\App\Http\Controllers\Api\CartController::class, 'removeItem']);
     Route::post('/checkout', [\App\Http\Controllers\Api\CartController::class, 'prepareCheckout']);
 });
+
+Route::get('/orders',       [OrderController::class, 'index']);
+    Route::post('/orders',      [OrderController::class, 'store']);
+    Route::get('/orders/{order}', [OrderController::class, 'show']);
