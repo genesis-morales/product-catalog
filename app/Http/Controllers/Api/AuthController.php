@@ -13,12 +13,12 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $data = $request->validate([
-            'name'                  => 'required|string|max:255',
-            'email'                 => 'required|email|unique:users',
-            'password'              => 'required|min:8|confirmed',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:8|confirmed',
         ]);
 
-        $user  = User::create([
+        $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
             'password' => bcrypt($data['password']),
@@ -26,7 +26,10 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => $user], 201);
+        return response()->json([
+            'token' => $token,
+            'user'  => $this->formatUser($user),
+        ], 201);
     }
 
     public function login(Request $request, CartService $cartService)
@@ -40,15 +43,14 @@ class AuthController extends Controller
             return response()->json(['message' => 'Credenciales incorrectas'], 401);
         }
 
-        $user = $request->user();
-
-        $token = $request->user()->createToken('api-token')->plainTextToken;
+        $user  = $request->user();
+        $token = $user->createToken('api-token')->plainTextToken;
 
         $cartService->mergeGuestCart($request, $user);
 
         return response()->json([
             'token' => $token,
-            'user'  => $user,
+            'user'  => $this->formatUser($user),
         ]);
     }
 
@@ -60,6 +62,16 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json($this->formatUser($request->user()));
+    }
+
+    private function formatUser(User $user): array
+    {
+        return [
+            'id'    => $user->id,
+            'name'  => $user->name,
+            'email' => $user->email,
+            'role'  => $user->role,
+        ];
     }
 }
