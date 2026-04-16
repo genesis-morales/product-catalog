@@ -21,6 +21,13 @@ Route::post('/login',    [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me',      [AuthController::class, 'me']);
+    
+    Route::get('/orders',       [OrderController::class, 'index']);
+    Route::post('/orders',      [OrderController::class, 'store']);
+    Route::get('/orders/{order}', [OrderController::class, 'show']);
+
+    Route::post('/products/upload-image', [ProductImageController::class, 'store']);
+    Route::apiResource('products', ProductController::class)->only(['index', 'store', 'update', 'destroy']);
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -28,10 +35,9 @@ Route::get('/categories/{id}/subcategories', [CategoryController::class, 'subcat
 Route::get('/subcategories', [SubcategoryController::class, 'index']);
 Route::get('/subcategories/{id}/products', [SubcategoryController::class, 'products']);
 
-Route::post('/products/upload-image', [ProductImageController::class, 'store']);
+
 Route::get('/products/all', [ProductController::class, 'all']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
-Route::apiResource('products', ProductController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::prefix('cart')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\CartController::class, 'show']);
@@ -40,7 +46,3 @@ Route::prefix('cart')->group(function () {
     Route::delete('/items/{item}', [\App\Http\Controllers\Api\CartController::class, 'removeItem']);
     Route::post('/checkout', [\App\Http\Controllers\Api\CartController::class, 'prepareCheckout']);
 });
-
-Route::get('/orders',       [OrderController::class, 'index']);
-    Route::post('/orders',      [OrderController::class, 'store']);
-    Route::get('/orders/{order}', [OrderController::class, 'show']);

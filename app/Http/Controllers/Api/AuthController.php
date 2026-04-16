@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Services\CartService;
 
 class AuthController extends Controller
 {
@@ -28,7 +29,7 @@ class AuthController extends Controller
         return response()->json(['token' => $token, 'user' => $user], 201);
     }
 
-    public function login(Request $request)
+    public function login(Request $request, CartService $cartService)
     {
         $request->validate([
             'email'    => 'required|email',
@@ -39,9 +40,16 @@ class AuthController extends Controller
             return response()->json(['message' => 'Credenciales incorrectas'], 401);
         }
 
+        $user = $request->user();
+
         $token = $request->user()->createToken('api-token')->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => $request->user()]);
+        $cartService->mergeGuestCart($request, $user);
+
+        return response()->json([
+            'token' => $token,
+            'user'  => $user,
+        ]);
     }
 
     public function logout(Request $request)

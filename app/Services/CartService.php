@@ -67,4 +67,35 @@ class CartService
         ?? $request->cookie('cart_token')
         ?? Str::uuid();
     }
+
+    public function mergeGuestCart(Request $request, $user): void
+    {
+    $guestToken = $this->resolveGuestToken($request);
+    
+    $guestCart = Cart::where('guest_token', $guestToken)
+                     ->where('status', 'open')
+                     ->first();
+
+    if (!$guestCart) return;
+
+    $userCart = Cart::firstOrCreate([
+        'user_id' => $user->id,
+        'status'  => 'open',
+    ]);
+
+    // Mover items del carrito guest al del usuario
+    foreach ($guestCart->items as $item) {
+        $existing = $userCart->items()->where('product_id', $item->product_id)->first();
+
+        if ($existing) {
+            $existing->quantity += $item->quantity;
+            $existing->save();
+        } else {
+            $item->cart_id = $userCart->id;
+            $item->save();
+        }
+    }
+    // Eliminar carrito guest
+    $guestCart->delete();
+    }
 }
