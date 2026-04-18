@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\SubcategoryController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\AdminOrderController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -28,6 +29,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/products/upload-image', [ProductImageController::class, 'store']);
     Route::apiResource('products', ProductController::class)->only(['index', 'store', 'update', 'destroy']);
+});
+
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/orders',                      [AdminOrderController::class, 'index']);
+    Route::get('/orders/{order}',              [AdminOrderController::class, 'show']);
+    Route::put('/orders/{order}/shipping', [AdminOrderController::class, 'updateShipping']);
+    Route::put('/orders/{order}/status',     [AdminOrderController::class, 'updateStatus']);
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
