@@ -14,6 +14,8 @@ class CartService
     public function getCart(Request $request): Cart
     {
         if ($request->user()) {
+            $this->mergeGuestCart($request, $request->user());
+
             return Cart::firstOrCreate([
                 'user_id' => $request->user()->id,
                 'status' => 'open',
@@ -63,39 +65,51 @@ class CartService
 
     public function resolveGuestToken(Request $request): string
     {
-    return $request->header('X-Cart-Token')
-        ?? $request->cookie('cart_token')
-        ?? Str::uuid();
+        return $request->header('X-Cart-Token')
+            ?? $request->cookie('cart_token')
+            ?? (string) Str::uuid();
     }
 
     public function mergeGuestCart(Request $request, $user): void
     {
-    $guestToken = $this->resolveGuestToken($request);
-    
-    $guestCart = Cart::where('guest_token', $guestToken)
-                     ->where('status', 'open')
-                     ->first();
+        $guestToken = $request->header('X-Cart-Token') ?? $request->cookie('cart_token');
 
-    if (!$guestCart) return;
-
-    $userCart = Cart::firstOrCreate([
-        'user_id' => $user->id,
-        'status'  => 'open',
-    ]);
-
-    // Mover items del carrito guest al del usuario
-    foreach ($guestCart->items as $item) {
-        $existing = $userCart->items()->where('product_id', $item->product_id)->first();
-
-        if ($existing) {
-            $existing->quantity += $item->quantity;
-            $existing->save();
-        } else {
-            $item->cart_id = $userCart->id;
-            $item->save();
+        if (! $guestToken) {
+            return;
         }
-    }
-    // Eliminar carrito guest
-    $guestCart->delete();
+
+        $guestCart = Cart::with('items')
+            ->where('guest_token', $guestToken)
+            ->where('status', 'open')
+            ->first();
+
+        if (! $guestCart) {
+            return;
+        }
+
+        $userCart = Cart::firstOrCreate([
+            'user_id' => $user->id,
+            'status'  => 'open',
+        ]);
+
+        if ($guestCart->id === $userCart->id) {
+            return;
+        }
+
+        foreach ($guestCart->items as $item) {
+            $existing = $userCart->items()->where('product_id', $item->product_id)->first();
+
+            if ($existing) {
+                $existing->quantity += $item->quantity;
+                $existing->unit_price = $item->unit_price;
+                $existing->save();
+                $item->delete();
+            } else {
+                $item->cart_id = $userCart->id;
+                $item->save();
+            }
+        }
+
+        $guestCart->delete();
     }
 }

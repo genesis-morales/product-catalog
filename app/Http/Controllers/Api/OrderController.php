@@ -32,6 +32,8 @@ class OrderController extends Controller
             'shipping_notes'   => 'nullable|string|max:500',
         ]);
 
+        $cartService->mergeGuestCart($request, $request->user());
+
         $cart = $cartService->getCart($request)->load('items.product');
 
         abort_if($cart->items->isEmpty(), 422, 'El carrito está vacío');
@@ -54,7 +56,7 @@ class OrderController extends Controller
             ]);
         }
 
-        // marcar carrito como completado
+        $cart->items()->delete();
         $cart->update(['status' => 'completed']);
 
         return response()->json(new OrderResource($order->load('items')), 201);

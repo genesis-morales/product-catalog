@@ -56,7 +56,7 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product, ImageUploadService $imageUpload)
     {
-        $validated = $request->safe()->only(['name', 'description', 'price', 'stock', 'available', 'subcategory_id']);
+        $validated = $request->safe()->only(['name', 'description', 'price', 'stock', 'available', 'subcategory_id', 'img']);
 
         if ($request->hasFile('image')) {
             $validated['img'] = $imageUpload->uploadProductImage($request->file('image'));
