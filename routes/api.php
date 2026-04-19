@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AdminOrderController;
 use App\Http\Controllers\Api\AdminDashboardController;
+use App\Http\Controllers\Api\AdminCustomerController;
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -23,9 +25,12 @@ Route::post('/login',    [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me',      [AuthController::class, 'me']);
+
+    Route::get('/customers', [AdminCustomerController::class, 'index']);
+    Route::get('/customers/{user}', [AdminCustomerController::class, 'show']);
     
-    Route::get('/orders',       [OrderController::class, 'index']);
-    Route::post('/orders',      [OrderController::class, 'store']);
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
 
     Route::post('/products/upload-image', [ProductImageController::class, 'store']);
