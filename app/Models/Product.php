@@ -39,6 +39,6 @@ class Product extends Model
             return null;
         }
 
-        return Storage::disk(config('filesystems.default'))->url($this->img);
+        return Storage::url($this->img);
     }
 }

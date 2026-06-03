@@ -7,6 +7,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
@@ -32,32 +33,48 @@ class OrderController extends Controller
             'shipping_notes'   => 'nullable|string|max:500',
         ]);
 
-        $cartService->mergeGuestCart($request, $request->user());
+        $order = DB::transaction(function () use ($request, $cartService, $data) {
+            $cartService->mergeGuestCart($request, $request->user());
 
-        $cart = $cartService->getCart($request)->load('items.product');
+            $cart = $cartService->getCart($request)->load('items.product');
 
-        abort_if($cart->items->isEmpty(), 422, 'El carrito está vacío');
+            abort_if($cart->items->isEmpty(), 422, 'El carrito está vacío');
 
-        $order = Order::create([
-            ...$data,
-            'user_id'      => $request->user()->id,
-            'order_number' => 'ORD-' . strtoupper(Str::random(8)),
-            'subtotal'     => $cart->subtotal,
-            'total'        => $cart->total,
-        ]);
-
-        foreach ($cart->items as $item) {
-            $order->items()->create([
-                'product_id'   => $item->product_id,
-                'product_name' => $item->product->name,
-                'unit_price'   => $item->unit_price,
-                'quantity'     => $item->quantity,
-                'total_price'  => $item->total_price,
+            $order = Order::create([
+                ...$data,
+                'user_id'      => $request->user()->id,
+                'order_number' => 'ORD-' . strtoupper(Str::random(8)),
+                'subtotal'     => $cart->subtotal,
+                'total'        => $cart->total,
             ]);
-        }
 
-        $cart->items()->delete();
-        $cart->update(['status' => 'completed']);
+            foreach ($cart->items as $item) {
+                $product = $item->product;
+
+                abort_if(! $product, 422, 'Producto no encontrado');
+                abort_if($product->stock < $item->quantity, 422, "Stock insuficiente para {$product->name}");
+
+                $newStock = $product->stock - $item->quantity;
+
+                $product->update([
+                    'stock' => $newStock,
+                    'available' => $newStock > 0,
+                ]);
+
+                $order->items()->create([
+                    'product_id'   => $item->product_id,
+                    'product_name' => $product->name,
+                    'unit_price'   => $item->unit_price,
+                    'quantity'     => $item->quantity,
+                    'total_price'  => $item->total_price,
+                ]);
+            }
+
+            $cart->items()->delete();
+            $cart->update(['status' => 'completed']);
+
+            return $order;
+        });
 
         return response()->json(new OrderResource($order->load('items')), 201);
     }
