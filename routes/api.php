@@ -16,11 +16,6 @@ use App\Http\Controllers\Api\AdminCustomerController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('/', function () { return response()->json([
-        'name' => 'Product Catalog API',
-        'status' => 'ok'
-    ]);
-});
 
 // Rutas públicas
 Route::post('/register', [AuthController::class, 'register']);
